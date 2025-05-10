@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gegensätze Slideshow</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      color: #333;
+    }
+    .slide {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 2.5rem;
+      transition: all 0.5s ease-in-out;
+      padding: 2rem;
+      text-align: center;
+    }
+    .active {
+      display: flex;
+    }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+    button {
+      font-size: 1.2rem;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    }
+    .image-container {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2rem;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .image-container img {
+      width: 40vw;
+      max-width: 300px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 1.5rem;
+      border: 3px solid #fff;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .image-container img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div id="slides"></div>
+  <div class="controls">
+    <button onclick="prevSlide()">Zurück</button>
+    <button onclick="nextSlide()">Weiter</button>
+  </div>
+
+  <script>
+    const data = [
+      ["Winter", "Sommer"],
+      ["Grau", "Blau"],
+      ["Norwegen", "Schweden"],
+      ["Klettern", "Fußball"],
+      ["Mathe", "Deutsch"],
+      ["Paulaner Spezi", "Wasser"],
+      ["Kochen", "Bestellen"],
+      ["Reis", "Nudeln"],
+      ["Stadtleben", "Landleben"],
+      ["Süß", "Salzig"],
+      ["Schokolade", "Gummibärchen"],
+      ["Konsole", "PC"],
+      ["Wasser mit Kohlensäure", "Still"],
+      ["Apfel", "Banane"],
+      ["Snickers", "Bounty"]
+    ];
+
+    const imageMap = {
+      "Winter": "https://wallpapers.com/images/featured/winter-cmgw5mq23dasvttz.jpg",
+      "Sommer": "https://www.schwarzwaelder-bote.de/media.media.8c28665c-0a5c-4135-9584-7e52ccc3cf0a.original1024.jpg",
+      "Grau": "https://cdn.1001hobbies.de/1240928-large_default/prince-august-p055-grau-grun-dunkel-gunship-grey.jpg",
+      "Blau": "https://cdn.webshopapp.com/shops/280326/files/278557408/1600x2048x1/jacquard-wollfarbe-marineblau.jpg",
+      "Norwegen": "https://image.geo.de/30125652/t/2t/v3/w1440/r1.3333/-/preikestolen-f-144207268-s-jpg--71156-.jpg",
+      "Schweden": "https://media.istockphoto.com/id/1364945953/de/foto/inselgruppe-an-der-ostseek%C3%BCste-in-schweden.jpg?s=612x612&w=0&k=20&c=BqvpG-wwPdoycxVL8kkA-pSK5kY9PTwt7JO58u5VuG4=",
+      "Klettern": "https://www.ispo.com/sites/default/files/b/79/69/79693018-imageData.jpg",
+      "Fußball": "https://images.pexels.com/photos/114296/pexels-photo-114296.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+      "Mathe": "https://deutsches-schulportal.de/content/uploads/2018/04/Einzelbild-Math42-Probleme-per-App-zerlegen-943x629.jpg",
+      "Deutsch": "https://media0.faz.net/ppmedia/w1240/aktuell/politik/briefe-an-die-herausgeber/2842034762/1.9351132/16x9/das-praeteritum-bleibt-fuer.jpg",
+      "Paulaner Spezi": "https://getraenkeservice-muenchen.com/wp-content/uploads/2017/04/Paulaner-Spezi-575x575.png",
+      "Wasser": "https://images.squarespace-cdn.com/content/v1/5ab436e5a2772c0f0060752c/1528838161840-HLGH0ZF38UGXY1NGU93D/Ein+Wasserglas+frischen+Mineralwassers+ist+die+beste+Sch%C3%B6nheitsquelle.jpg",
+      "Kochen": "https://storage.googleapis.com/twg-content/original_images/b1098_C10-BANNER_ZHeiUoW.jpg",
+      "Bestellen": "https://ordersmart.de/wp-content/uploads/2021/09/essen-bestellen-mit-liefer-apps.jpg",
+      "Reis": "https://image.brigitte.de/13215512/t/IG/v2/w960/r1/-/sushi-reis-kochen.jpg",
+      "Nudeln": "https://sebplatform.api.groupe-seb.com/statics/258a260e-49bf-44ca-88db-3ed13fce4617.jpg",
+      "Stadtleben": "https://www.stadtrundfahrt-dresden.de/files/Dresden/foto_neu_2024/Header%20Mobil/stadtrundfahrt_dresden_altstadtpanorama_header_mobil_600x350.jpg?refresh=true",
+      "Landleben": "https://heimatbild.de/pic/moenchswalder_b.jpg",
+      "Süß": "https://iamstronger.de/wp-content/uploads/2023/04/suess-gross.jpg",
+      "Salzig": "https://www.fleeck.com/de/wp-content/uploads/sites/3/2023/01/Salziger-Geschmack-im-Mund-Verursacht-den-Geschmack-von-Salz-im-Mund-1024x1024.jpg",
+      "Schokolade": "https://nomochoc.de/cdn/shop/articles/Design_ohne_Titel_-_2024-07-01T123618.478.jpg?v=1719830192",
+      "Gummibärchen": "https://image.brigitte.de/11680262/t/yn/v3/w960/r1/-/gummiebaerchen-selber-machen.jpg",
+      "Konsole": "https://images.mein-mmo.de/medien/2024/09/PS5-Pro-Titelbild-780x438.jpg",
+      "PC": "https://d10mhq06fikmnr.cloudfront.net/cms-content/content/white-pc/DE/White_Gaming_PCs_Mood-BG_m01-min.jpg",
+      "Wasser mit Kohlensäure": "https://i.imgur.com/MEj0oSf.png",
+      "Still": "https://i.imgur.com/nR5EhP9.png",
+      "Apfel": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSacR75Wo3-FbaOZGnTk6FVEC7a45tT-3lveQ&s",
+      "Banane": "https://www.alnatura.de/-/media/Alnatura/B2C/Bilder/magazin/warenkunde/2400x1350/Warenkunde_Bananen_Quer_2_Quelle_Alnatura_Fotograf_Oliver_Brachat-1.jpg",
+      "Snickers": "https://pi.nice-cdn.com/upload/image/product/large/default/76248_d9749bcd.512x512.jpg",
+      "Bounty": "https://cdn02.plentymarkets.com/mgt7h3rmbzvp/item/images/1199912090/full/1199912090-Bounty-Riegel--Schokolade--57g-Riegel_1.jpg"
+    };
+
+    const slidesContainer = document.getElementById('slides');
+
+    // Titelseite einfügen
+    const introSlide = document.createElement('div');
+    introSlide.className = 'slide active';
+
+    const introText = document.createElement('div');
+    introText.textContent = "Dies oder Das";
+    introText.style.fontSize = "4rem";
+    introText.style.fontWeight = "bold";
+    introSlide.appendChild(introText);
+
+    slidesContainer.appendChild(introSlide);
+
+    // Die restlichen Slides
+    data.forEach(pair => {
+      const div = document.createElement('div');
+      div.className = 'slide';
+
+      const text = document.createElement('div');
+      text.textContent = `${pair[0]} – ${pair[1]}`;
+      div.appendChild(text);
+
+      const imageDiv = document.createElement('div');
+      imageDiv.className = 'image-container';
+
+      const img1 = document.createElement('img');
+      img1.src = imageMap[pair[0]] || '';
+      img1.alt = pair[0];
+
+      const img2 = document.createElement('img');
+      img2.src = imageMap[pair[1]] || '';
+      img2.alt = pair[1];
+
+      imageDiv.appendChild(img1);
+      imageDiv.appendChild(img2);
+      div.appendChild(imageDiv);
+
+      slidesContainer.appendChild(div);
+    });
+
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function showSlide(index) {
+      slides[current].classList.remove('active');
+      current = (index + slides.length) % slides.length;
+      slides[current].classList.add('active');
+    }
+
+    function nextSlide() {
+      showSlide(current + 1);
+    }
+
+    function prevSlide() {
+      showSlide(current - 1);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+  </script>
+</body>
+</html>
